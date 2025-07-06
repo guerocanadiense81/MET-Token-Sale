@@ -1,6 +1,6 @@
 /**
  * @file buy-page.js
- * @description Workaround version: Calculates required BNB and displays estimated USD cost.
+ * @description Final version with calculation fix.
  */
 const TokenSale = {
     // --- CONFIGURATION ---
@@ -9,7 +9,6 @@ const TokenSale = {
         "function buyTokens() payable",
         "function tradingRate() view returns (uint256)"
     ],
-    // Add back the CoinGecko API URL
     COINGECKO_API_URL: "https://api.coingecko.com/api/v3/simple/price?ids=binancecoin&vs_currencies=usd",
     REQUIRED_NETWORK: {
         chainId: '0x38' // Binance Smart Chain
@@ -20,7 +19,7 @@ const TokenSale = {
         signer: null,
         contract: null,
         tradingRate: 0,
-        bnb_usd_price: 0, // To store the live price
+        bnb_usd_price: 0,
         isReady: false
     },
     
@@ -30,7 +29,7 @@ const TokenSale = {
         if (typeof ethers === "undefined") return alert("Ethers.js failed to load.");
         this.cacheDOMElements();
         this.attachEventListeners();
-        this.fetchLivePrices(); // Fetch price on page load
+        this.fetchLivePrices();
     },
 
     cacheDOMElements() {
@@ -40,7 +39,7 @@ const TokenSale = {
             purchaseSection: document.getElementById('purchaseSection'),
             metInput: document.getElementById('metAmountInput'),
             bnbCostDisplay: document.getElementById('bnbCostDisplay'),
-            usdCostDisplay: document.getElementById('usdCostDisplay'), // New element
+            usdCostDisplay: document.getElementById('usdCostDisplay'),
             apiStatus: document.getElementById('apiStatus'),
             buyBtn: document.getElementById('buyBtn'),
             txStatus: document.getElementById('txStatus'),
@@ -53,25 +52,36 @@ const TokenSale = {
         this.dom.buyBtn.addEventListener('click', () => this.executePurchase());
     },
 
-    async fetchContractData() {
-        // ... (This function remains unchanged)
-    },
-
-    // Fetches live price from CoinGecko
     async fetchLivePrices() {
         try {
             const response = await fetch(this.COINGECKO_API_URL);
             if (!response.ok) throw new Error('Could not fetch price from CoinGecko');
             const data = await response.json();
             this.state.bnb_usd_price = data.binancecoin.usd;
+            this.state.isReady = true;
             this.updateCalculations();
         } catch (error) {
             console.error("Could not fetch live prices:", error);
             this.dom.apiStatus.textContent = "Could not load live USD price.";
         }
     },
+    
+    // This is the updated function with the fix
+    async fetchContractData() {
+        try {
+            const readOnlyContract = new ethers.Contract(this.CONTRACT_ADDRESS, this.CONTRACT_ABI, this.state.signer.provider);
+            this.state.tradingRate = await readOnlyContract.tradingRate();
+            this.dom.apiStatus.textContent = `Contract Rate: 1 BNB = ${this.state.tradingRate.toString()} MET`;
+            
+            // Re-run the calculation now that we have the trading rate.
+            this.updateCalculations();
 
-    // This function is updated to calculate and display both BNB and USD costs
+        } catch (error) {
+            console.error("Could not fetch trading rate from contract:", error);
+            this.dom.apiStatus.textContent = "Error fetching contract data.";
+        }
+    },
+
     updateCalculations() {
         if (this.state.tradingRate === 0) return;
         
@@ -108,7 +118,32 @@ const TokenSale = {
     },
 
     async executePurchase() {
-        // ... (This function remains unchanged)
+        if (!this.state.contract || !this.state.isReady) return alert("Please connect wallet and wait for data to load.");
+        
+        const metAmount = parseFloat(this.dom.metInput.value);
+        if (!metAmount || metAmount <= 0) return alert("Please enter a valid MET amount.");
+
+        this.dom.txStatus.textContent = "Calculating required BNB...";
+        this.dom.buyBtn.disabled = true;
+
+        try {
+            const bnbCost = metAmount / parseFloat(this.state.tradingRate.toString());
+            const bnbInWei = ethers.utils.parseEther(bnbCost.toFixed(18));
+
+            this.dom.txStatus.textContent = "Preparing transaction...";
+            
+            const tx = await this.state.contract.buyTokens({ value: bnbInWei });
+            
+            this.dom.txStatus.textContent = "Transaction sent, awaiting confirmation...";
+            await tx.wait();
+
+            this.dom.txStatus.innerHTML = `✅ Success! <a href="https://bscscan.com/tx/${tx.hash}" target="_blank">View on BscScan</a>`;
+        } catch (error) {
+            console.error("Purchase failed:", error);
+            this.dom.txStatus.textContent = `❌ Error: ${error.reason || "Transaction rejected."}`;
+        } finally {
+            this.dom.buyBtn.disabled = false;
+        }
     }
 };
 
