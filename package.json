@@ -1,0 +1,17 @@
+{
+  "name": "met-token-sale",
+  "version": "1.0.0",
+  "description": "A page to buy MET tokens with BNB.",
+  "main": "server/server.js",
+  "scripts": {
+    "start": "node server/server.js"
+  },
+  "engines": {
+    "node": "20.x"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.0.0",
+    "express": "^4.18.1"
+  }
+}

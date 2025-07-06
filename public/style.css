@@ -1,0 +1,137 @@
+/* Import Google Font */
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap');
+
+/* Main Theme Variables */
+:root {
+    --primary-color: #39FF14; /* Flashy Neon Green */
+    --background-color: #000000;
+    --panel-background: rgba(20, 20, 20, 0.7);
+    --text-color: #EAEAEA;
+    --font-family: 'Orbitron', sans-serif;
+}
+
+/* General Body and Layout Styles */
+body {
+    background-color: var(--background-color);
+    font-family: var(--font-family);
+    text-align: center;
+    color: var(--text-color);
+    padding: 20px;
+    text-shadow: 0 0 5px rgba(57, 255, 20, 0.3);
+}
+
+.logo-container {
+    margin-bottom: 30px;
+}
+
+#logo {
+    width: 150px;
+    height: auto;
+}
+
+h1 {
+    color: var(--primary-color);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    text-shadow: 0 0 10px var(--primary-color);
+}
+
+p {
+    line-height: 1.6;
+}
+
+/* UI Panel Styles */
+.ui-panel {
+    padding: 25px;
+    margin: 20px auto;
+    background: var(--panel-background);
+    backdrop-filter: blur(5px);
+    border-radius: 10px;
+    border: 1px solid var(--primary-color);
+    box-shadow: 0 0 25px rgba(57, 255, 20, 0.2);
+    max-width: 600px;
+}
+
+.ui-panel div {
+    margin: 15px 0;
+    font-size: 1.1em;
+}
+
+/* Buttons and Inputs */
+button {
+    background-color: var(--primary-color);
+    color: var(--background-color);
+    padding: 12px 30px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1.1em;
+    font-weight: bold;
+    font-family: var(--font-family);
+    text-transform: uppercase;
+    transition: all 0.3s ease;
+    letter-spacing: 1px;
+}
+
+button:hover {
+    background-color: #fff;
+    color: #000;
+    box-shadow: 0 0 20px var(--primary-color);
+}
+
+button:disabled {
+    background-color: #222;
+    color: #555;
+    border: 1px solid #555;
+    cursor: not-allowed;
+}
+
+input[type="number"] {
+    width: 95%;
+    padding: 12px;
+    font-size: 1.2em;
+    border-radius: 5px;
+    border: 1px solid var(--primary-color);
+    background-color: #111;
+    color: var(--primary-color);
+    text-align: center;
+    font-family: var(--font-family);
+}
+
+input[type="number"]:focus {
+    outline: none;
+    box-shadow: 0 0 15px rgba(57, 255, 20, 0.5);
+}
+
+/* Status and Display Text */
+#walletStatus, #txStatus, #apiStatus {
+    font-size: 0.9em;
+    color: #aaa;
+}
+
+#txStatus a {
+    color: var(--primary-color);
+    text-decoration: none;
+}
+
+#price-display {
+    background: rgba(0,0,0,0.3); 
+    padding: 15px; 
+    border-radius: 5px;
+    border: 1px dashed #333;
+}
+
+/* Instructions Styling */
+.instruction-panel {
+    text-align: left;
+}
+.instruction-panel ol {
+    padding-left: 20px;
+}
+.instruction-panel li {
+    margin-bottom: 10px;
+}
+.instruction-panel strong {
+    color: var(--primary-color);
+    word-break: break-all; /* Ensures long contract address doesn't overflow */
+}
